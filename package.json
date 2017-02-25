@@ -5,8 +5,11 @@
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
+    "copy": "^0.3.0",
     "gulp": "^3.9.1",
     "gulp-jasmine": "^2.4.2",
+    "node-fs-extra": "^0.8.1",
+    "node-osascript": "^2.0.0",
     "sketch-driver": "github:preciousforever/sketchapp-driver"
   },
   "scripts": {

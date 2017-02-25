@@ -1,10 +1,66 @@
-var sketch = require('sketch-driver');
+const sketch = require('sketch-driver');
+const fse = require('node-fs-extra');
+const path = require('path');
+const osascript = require('node-osascript');
+const copy = require('copy');
+
+function copySketchFile(filename, done) {
+  const TMP_DIR = path.join(__dirname, 'temp');
+
+  fse.removeSync(TMP_DIR);
+  fse.mkdirs(TMP_DIR);
+
+  const copiedFile = path.join(TMP_DIR, filename);
+  copy(filename, TMP_DIR, done);
+  return copiedFile;
+}
+
+function openSketchFile(filename, done) {
+  var args = {
+    filename: filename,
+  };
+
+  const script =  `
+    -- the considering block causes Applescript to wait for Sketch
+    -- to do its thing before continuing.
+    -- http://www.macscripter.net/viewtopic.php?pid=60364
+    considering application responses
+      tell application "Sketch"
+        -- TODO: Would be nice to only close temp document, not every doc
+        close every document without saving
+      end tell
+    end considering
+
+    -- Not sure if this really needs to be a separate considering block,
+    -- but let's be safe.
+    considering application responses
+      tell application "Sketch"
+        open filename
+      end tell
+    end considering
+  `
+
+  osascript.execute(script, args, function(err, result, raw) {
+    done(err, result);
+  });
+}
 
 describe("Basic tests", function() {
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 1000;
   });
+
+  var tempFilename;
+  beforeEach(function(done) {
+    tempFilename = copySketchFile('tests/test-cases.sketch', done);
+  });
+  beforeEach(function(done) {
+    openSketchFile(tempFilename, done);
+  })
+
+  it("Dummy", function() {});
+
 
   it("Should work", function(done) {
     var script = `
@@ -45,7 +101,6 @@ describe("Basic tests", function() {
     sketch.run(script)
       .then(function(response) {
         var data = response.data;
-        console.log(data);
         expect(data.beforePush.groupParentName).toBe("Simple push");
         expect(data.beforePush.ovalParentName).toBe("Simple push");
         expect(data.beforePush.groupParentIsOvalParent).toBeTruthy();
@@ -55,8 +110,6 @@ describe("Basic tests", function() {
         expect(data.afterPush.ovalParentName).toBe("Group");
         expect(data.afterPush.groupParentIsOvalParent).toBeFalsy();
 
-
-        //expect(response.data.layerCount).toBe(2);
         done();
       })
       .catch(function(err) {
