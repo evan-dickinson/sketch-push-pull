@@ -22,7 +22,17 @@ function getParent(layer) {
   return [[layer ancestors] lastObject]
 }
 
-
+function setCurrentPageByName(document, pageName) {
+  var pages = [document pages];
+  var page = findLayerNamed(pages, pageName);
+  if (page !== null) {
+    [document setCurrentPage: page];
+    return page;
+  }
+  else {
+    throw new Error("Could not find paged named: " + pageName);
+  }
+}
 
 function selectLayersByName(context, layerNames) {
   var doc = context.document;
