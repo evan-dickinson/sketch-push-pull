@@ -44,7 +44,25 @@ function openSketchFile(filename, done) {
   });
 }
 
-describe("Basic tests", function() {
+function runScript(script, args) {
+  const argsCmd = "var args = " + JSON.stringify(args) + ";\n";
+  const importCmd = `
+    @import '../Push-Pop.sketchplugin/Contents/Sketch/test-utils.cocoascript';
+    @import '../Push-Pop.sketchplugin/Contents/Sketch/script.cocoascript';
+  ` ;
+  const preamble = `
+    var response = {};
+
+    var doc = context.document;
+    setCurrentPageByName(doc, args.PAGE_NAME);
+    var page = [doc currentPage];
+  `;
+  const fullScript = argsCmd + importCmd + preamble + script;
+  return sketch.run(fullScript)
+}
+
+
+describe("Push down", function() {
   beforeEach(function() {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 2 * 1000;
@@ -58,25 +76,13 @@ describe("Basic tests", function() {
     openSketchFile(tempFilename, done);
   });
 
-  it("Dummy", function() {});
-
-
   it("Push one level", function(done) {
     const PAGE_NAME = "Push one level";
 
     var args = {
       PAGE_NAME: PAGE_NAME,
     };
-    argsCmd = "var args = " + JSON.stringify(args) + ";\n";
-    var script = argsCmd + `
-      @import '../Push-Pop.sketchplugin/Contents/Sketch/test-utils.cocoascript';
-      @import '../Push-Pop.sketchplugin/Contents/Sketch/script.cocoascript';
-
-      var response = {};
-
-      var doc = context.document;
-      setCurrentPageByName(doc, args.PAGE_NAME);
-      var page = [doc currentPage];
+    var script = `
       var group = findLayerNamed([page children], 'Group');
       var oval  = findLayerNamed([page children], 'Oval');
 
@@ -104,13 +110,12 @@ describe("Basic tests", function() {
       $SD.respond(response)
     `
 
-    sketch.run(script)
+    runScript(script, args)
       .then(function(response) {
         var data = response.data;
         expect(data.beforePush.groupParentName).toBe(PAGE_NAME);
         expect(data.beforePush.ovalParentName).toBe(PAGE_NAME);
         expect(data.beforePush.groupParentIsOvalParent).toBeTruthy();
-
 
         expect(data.afterPush.groupParentName).toBe(PAGE_NAME);
         expect(data.afterPush.ovalParentName).toBe("Group");
@@ -132,16 +137,7 @@ describe("Basic tests", function() {
     var args = {
       PAGE_NAME: PAGE_NAME,
     };
-    argsCmd = "var args = " + JSON.stringify(args) + ";\n";
-    var script = argsCmd + `
-      @import '../Push-Pop.sketchplugin/Contents/Sketch/test-utils.cocoascript';
-      @import '../Push-Pop.sketchplugin/Contents/Sketch/script.cocoascript';
-
-      var response = {};
-
-      var doc = context.document;
-      setCurrentPageByName(doc, args.PAGE_NAME);
-      var page = [doc currentPage];
+    var script = `
       var group = findLayerNamed([page children], 'Inner Group');
       var oval  = findLayerNamed([page children], 'Oval');
 
@@ -149,25 +145,20 @@ describe("Basic tests", function() {
         // To do JSON stuff, convert from NSString to plain JS String
         groupParentName: new String(getParent(group).name()),
         ovalParentName:  new String(getParent(oval).name()),
-
       };
 
-      // TODO: We'll test Sketch better if we can actually modify the selection programatically.
-      // Catch cases where the selection stops being ordered.
       var layers = [NSArray arrayWithObjects: group, oval];
       doPushIn(layers);
-
 
       response.afterPush = {
         groupParentName: new String(getParent(group).name()),
         ovalParentName:  new String(getParent(oval).name()),
-
       }
 
       $SD.respond(response)
     `
 
-    sketch.run(script)
+    runScript(script, args)
       .then(function(response) {
         var data = response.data;
         expect(data.beforePush.groupParentName).toBe('Outer Group');
@@ -185,6 +176,61 @@ describe("Basic tests", function() {
         done();
       })
   });
+
+
+it("Push into a shape", function(done) {
+    const PAGE_NAME = "Push into a shape";
+
+    var args = {
+      PAGE_NAME: PAGE_NAME,
+    };
+    var script = `
+      var rect = findLayerNamed([page children], 'Rectangle');
+      var oval  = findLayerNamed([page children], 'Oval');
+
+      response.beforePush = {
+        rectParentName: new String(getParent(rect).name()),
+        ovalParentName:  new String(getParent(oval).name()),
+      };
+
+      var layers = [NSArray arrayWithObjects: rect, oval];
+      response.caughtError = false;
+      try {
+        doPushIn(layers);
+      }
+      catch (error) {
+        response.caughtError = true;
+      }
+
+      response.afterPush = {
+        rectParentName: new String(getParent(rect).name()),
+        ovalParentName: new String(getParent(oval).name()),
+      }
+
+      $SD.respond(response)
+    `
+
+    runScript(script, args)
+      .then(function(response) {
+        var data = response.data;
+        expect(data.beforePush.rectParentName).toBe(PAGE_NAME);
+        expect(data.beforePush.ovalParentName).toBe(PAGE_NAME);
+
+        expect(data.caughtError).toBeTruthy();
+
+        expect(data.afterPush.rectParentName).toBe(PAGE_NAME);
+        expect(data.afterPush.ovalParentName).toBe(PAGE_NAME);
+
+        done();
+      })
+      .catch(function(err) {
+        console.log(err);
+        expect(false).toBe(true);
+        done();
+      })
+  });
+
+
 
 
 });
