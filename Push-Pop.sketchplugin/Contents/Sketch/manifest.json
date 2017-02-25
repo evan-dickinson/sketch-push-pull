@@ -1,0 +1,24 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "name" : "Push-Pop",
+      "handlers" : {
+        "run" : "onRun"
+      },
+      "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "com.bohemiancoding.sketch.runscriptidentifier"
+    ],
+    "title" : "Push-Pop"
+  },
+  "identifier" : "com.example.sketch.69046728-7530-4731-85a7-45ac1f153df0",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "Push-Pop"
+}

@@ -1,0 +1,49 @@
+function isPlainGroup(layer) {
+  var isLayerGroup = [layer isMemberOfClass:[MSLayerGroup class]];
+  var isArtboard   = [layer isMemberOfClass:[MSArtboardGroup class]];
+  var isPage       = [layer isMemberOfClass:[MSPage class]];
+
+  return isLayerGroup && !isArtboard && !isPage;
+}
+
+
+function onRun(context) {
+  log("Starting");
+
+  var doc = context.document;
+  var selection = context.selection;
+
+  if ([selection count] < 1) {
+    [doc showMessage: "No selection"];
+    return;
+  }
+  var toPop = selection[0];
+  var ancestors = [toPop ancestors];
+
+  if ([ancestors count] < 2) {
+    [doc showMessage: "Not enough ancestors"];
+    return;
+  }
+  var parent = ancestors[[ancestors count] - 1 ];
+  var grandparent = ancestors[[ancestors count] - 2];
+
+  var isPlain = isPlainGroup(parent);
+  if (!isPlain) {
+    [doc showMessage: "Can't pop a layer outside an artboard or page."];
+    return;
+  }
+
+  var layersToPop = [toPop];
+  [MSLayerGroup moveLayers: layersToPop intoGroup: grandparent];
+
+
+
+  //var message = [toPop name];
+  //var message = "Ancestors: " + [ancestors count];
+  //var message = "Parent: " + [parent name];
+  //var message = "Parent layer, " + [parent name] + ", isPlainGroup: " + isPlain;
+
+
+  //[doc showMessage: message];
+  //log(message);
+}
