@@ -3,16 +3,25 @@
   "commands" : [
     {
       "script" : "script.cocoascript",
-      "name" : "Push-Pop",
+      "name" : "Pop out of group",
       "handlers" : {
-        "run" : "onRun"
+        "run" : "onPopOut"
       },
-      "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
+      "identifier" : "name.evand.popout"
+    },
+    {
+      "script" : "script.cocoascript",
+      "name" : "Push into group",
+      "handlers" : {
+        "run" : "onPushIn"
+      },
+      "identifier" : "name.evand.pushin"
     }
   ],
   "menu" : {
     "items" : [
-      "com.bohemiancoding.sketch.runscriptidentifier"
+      "name.evand.popout",
+      "name.evand.pushin"
     ],
     "title" : "Push-Pop"
   },

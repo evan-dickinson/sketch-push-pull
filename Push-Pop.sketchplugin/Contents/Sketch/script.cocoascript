@@ -1,15 +1,17 @@
-function isPlainGroup(layer) {
-  var isLayerGroup = [layer isMemberOfClass:[MSLayerGroup class]];
+function isArtboardOrPage(layer) {
   var isArtboard   = [layer isMemberOfClass:[MSArtboardGroup class]];
   var isPage       = [layer isMemberOfClass:[MSPage class]];
 
-  return isLayerGroup && !isArtboard && !isPage;
+  return isArtboard || isPage;
+}
+
+function isPlainGroup(layer) {
+  var isLayerGroup = [layer isMemberOfClass:[MSLayerGroup class]];
+  return isLayerGroup && !isArtboardOrPage(layer);
 }
 
 
-function onRun(context) {
-  log("Starting");
-
+function onPopOut(context) {
   var doc = context.document;
   var selection = context.selection;
 
@@ -35,15 +37,31 @@ function onRun(context) {
 
   var layersToPop = [toPop];
   [MSLayerGroup moveLayers: layersToPop intoGroup: grandparent];
-
-
-
-  //var message = [toPop name];
-  //var message = "Ancestors: " + [ancestors count];
-  //var message = "Parent: " + [parent name];
-  //var message = "Parent layer, " + [parent name] + ", isPlainGroup: " + isPlain;
-
-
-  //[doc showMessage: message];
-  //log(message);
 }
+
+function onPushIn(context) {
+  var doc = context.document;
+  var selection = context.selection;
+
+  if ([selection count] !== 2) {
+    [doc showMessage: "Select exactly 2 layers"];
+    return;
+  }
+
+  // Looks like the selection is sorted by Z axis, from bottom to top
+  var toMove = selection[1];
+  var destination = selection[0];
+
+  if (isArtboardOrPage(toMove) || isArtboardOrPage(destination)) {
+    [doc showMessage: "Push doesn't work with artboards or pages"];
+    return;
+  }
+
+  if (!isPlainGroup(destination)) {
+    [doc showMessage: "Destination must be a group."];
+    return;
+  }
+
+  [MSLayerGroup moveLayers: [toMove] intoGroup: destination];
+}
+
