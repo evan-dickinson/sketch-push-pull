@@ -39,13 +39,12 @@ function onPopOut(context) {
   [MSLayerGroup moveLayers: layersToPop intoGroup: grandparent];
 }
 
-function onPushIn(context) {
-  var doc = context.document;
-  var selection = context.selection;
+function doPushIn(selection) {
+  //var selection = context.selection;
 
-  if ([selection count] !== 2) {
-    [doc showMessage: "Select exactly 2 layers"];
-    return;
+  if ([selection count] != 2) {
+    var actualCount = [selection count];
+    throw("Select exactly 2 layers. You selected " +  actualCount);
   }
 
   // Looks like the selection is sorted by Z axis, from bottom to top
@@ -53,15 +52,25 @@ function onPushIn(context) {
   var destination = selection[0];
 
   if (isArtboardOrPage(toMove) || isArtboardOrPage(destination)) {
-    [doc showMessage: "Push doesn't work with artboards or pages"];
-    return;
+    throw("Push doesn't work with artboards or pages");
   }
 
   if (!isPlainGroup(destination)) {
-    [doc showMessage: "Destination must be a group."];
-    return;
+    throw("Destination must be a group");
   }
 
   [MSLayerGroup moveLayers: [toMove] intoGroup: destination];
 }
+
+function onPushIn(context) {
+  try {
+    doPushIn(context.selection);
+  }
+  catch (error) {
+    var doc = context.document;
+    [doc showMessage: error.message];
+  }
+}
+
+
 

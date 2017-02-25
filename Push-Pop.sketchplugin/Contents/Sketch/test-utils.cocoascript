@@ -1,0 +1,67 @@
+function findLayerNamed(layers, targetLayerName) {
+  for (var idx = 0; idx < [layers count]; idx++) {
+    var layer = [layers objectAtIndex: idx];
+    var layerName = [layer name];
+
+    if (layerName == targetLayerName) {
+      return layer;
+    }
+
+    if ([layer isMemberOfClass:[MSLayerGroup class]]) {
+      var result = findLayerNamed([layer layers], targetLayerName);
+      if (result !== null) {
+        return result;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getParent(layer) {
+  return [[layer ancestors] lastObject]
+}
+
+
+
+function selectLayersByName(context, layerNames) {
+  var doc = context.document;
+  var page = [doc currentPage];
+  var artboard = [page currentArtboard];
+  var selection = context.selection;
+
+  if ([selection count] > 0) {
+    throw new Error("Did not expect there to already be a selection");
+  }
+
+  layerNames.forEach(function(layerName) {
+    var layer = findLayerNamed([page children], layerName);
+    if (layer == null) {
+      throw Error("Could not find the right layer: " + layerName);
+    }
+
+    [layer setIsSelected: true];
+  });
+}
+
+
+function getLayersByName(context, layerNames) {
+  var doc = context.document;
+  var page = [doc currentPage];
+
+  var layers = [NSMutableArray new];
+
+  layerNames.forEach(function(layerName) {
+    var layer = findLayerNamed([page children], layerName);
+    if (layer == null) {
+      throw Error("Could not find the right layer: " + layerName);
+    }
+
+    //layers.push(layer);
+    [layers addObject: layer];
+  });
+
+  return layers;
+}
+
+

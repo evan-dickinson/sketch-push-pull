@@ -1,0 +1,9 @@
+Sketch driver fix-ups:
+
+1) Create the tmp directory, if doesn't exist
+2) Fix path to import header.cocoascript
+3) Example is wrong; doesn't use promise api
+4) Typo in the first example -- extra curly brace
+
+5) Can't print log messages
+  - Can the JSON go into a named pipe?
