@@ -40,26 +40,28 @@ function onPopOut(context) {
 }
 
 function doPushIn(selection) {
-  //var selection = context.selection;
-
-  if ([selection count] != 2) {
+  if ([selection count] < 2) {
     var actualCount = [selection count];
-    throw("Select exactly 2 layers. You selected " +  actualCount);
+    throw("Select 2 or more layers. You selected " +  actualCount);
   }
 
   // Looks like the selection is sorted by Z axis, from bottom to top
-  var toMove = selection[1];
   var destination = selection[0];
 
-  if (isArtboardOrPage(toMove) || isArtboardOrPage(destination)) {
-    throw("Push doesn't work with artboards or pages");
-  }
+  for (idx = 1; idx < selection.length; idx++) {
+    var toMove = selection[idx];
 
-  if (!isPlainGroup(destination)) {
-    throw("Destination must be a group");
-  }
+    if (isArtboardOrPage(toMove) || isArtboardOrPage(destination)) {
+      throw("Push doesn't work with artboards or pages");
+    }
 
-  [MSLayerGroup moveLayers: [toMove] intoGroup: destination];
+    if (!isPlainGroup(destination)) {
+      throw("Destination must be a group");
+    }
+
+    [MSLayerGroup moveLayers: [toMove] intoGroup: destination];
+    //[destination layerDidResize];
+  };
 }
 
 function onPushIn(context) {
@@ -67,8 +69,10 @@ function onPushIn(context) {
     doPushIn(context.selection);
   }
   catch (error) {
-    var doc = context.document;
-    [doc showMessage: error.message];
+    if (typeof error === 'string') {
+      var doc = context.document;
+      [doc showMessage: error];
+    }
   }
 }
 
