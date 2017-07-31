@@ -37,6 +37,9 @@ function onPopOut(context) {
 
   var layersToPop = [toPop];
   [MSLayerGroup moveLayers: layersToPop intoGroup: grandparent];
+
+  // Update group size. http://sketchplugins.com/d/133-grouping-two-layers-causes-weired-position-and-size-values-of-group
+  parent.resizeToFitChildrenWithOption(1);
 }
 
 function doPushIn(selection) {
@@ -60,7 +63,8 @@ function doPushIn(selection) {
     }
 
     [MSLayerGroup moveLayers: [toMove] intoGroup: destination];
-    //[destination layerDidResize];
+    // Update group size. http://sketchplugins.com/d/133-grouping-two-layers-causes-weired-position-and-size-values-of-group
+    destination.resizeToFitChildrenWithOption(1);
   };
 }
 

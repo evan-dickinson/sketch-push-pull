@@ -7,3 +7,9 @@ Sketch driver fix-ups:
 
 5) Can't print log messages
   - Can the JSON go into a named pipe?
+
+
+Bugs in the app:
+* After push into group, would be nice to keep the item selected. 
+  - In the layer list, open up the group you pushed into. See the item in its new home.
+
