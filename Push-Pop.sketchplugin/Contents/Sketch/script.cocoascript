@@ -66,6 +66,9 @@ function doPushIn(selection) {
     // Update group size. http://sketchplugins.com/d/133-grouping-two-layers-causes-weired-position-and-size-values-of-group
     destination.resizeToFitChildrenWithOption(1);
   };
+
+  // Deselect destination. http://sketchplugins.com/d/231-programmatically-selecting-layers
+  [destination select: false byExpandingSelection: true];
 }
 
 function onPushIn(context) {
