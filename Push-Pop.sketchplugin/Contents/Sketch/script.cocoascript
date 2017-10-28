@@ -19,8 +19,8 @@ function onPopOut(context) {
     [doc showMessage: "No selection"];
     return;
   }
-  var toPop = selection[0];
-  var ancestors = [toPop ancestors];
+  var firstItem = selection[0];
+  var ancestors = [firstItem ancestors];
 
   if ([ancestors count] < 2) {
     [doc showMessage: "Not enough ancestors"];
@@ -34,8 +34,20 @@ function onPopOut(context) {
     [doc showMessage: "Can't pop a layer outside an artboard or page."];
     return;
   }
+  
+  // Ensure that all items have the same parent
+  for (var idx = 0; idx < selection.length; idx++) {
+    var currItem = selection[idx];
+    var currAncestors = [currItem ancestors];
+    var currParent = currAncestors[[currAncestors count] - 1];
 
-  var layersToPop = [toPop];
+    if (currParent != parent) {
+      [doc showMessage: "All items must be in the same group"];
+      return;
+    }
+  }
+
+  var layersToPop = selection;
   [MSLayerGroup moveLayers: layersToPop intoGroup: grandparent];
 
   // Update group size. http://sketchplugins.com/d/133-grouping-two-layers-causes-weired-position-and-size-values-of-group
